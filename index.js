@@ -16,28 +16,25 @@ app.use(express.static('public'));
 
 // sinkronisasi dengan endpoint di file public/script.js
 app.post('/api/chat', async (req, res) => {
-
-    const { message } = req.body;
-
-    if (!message) {
-        return res.status(400).json({ error: "Message kosong" });
-    }
-
+    const { conversation } = req.body;
     try {
+        if (!Array.isArray(conversation)) throw new Error('Conversation must be an array of messages.');
+        const contents = conversation.map(({ role, text }) => ({
+            role,
+            parts : [{ text}]
+        }));
         const response = await ai.models.generateContent({
             model: GEMINI_MODEL,
-            contents: message
+            contents, config: {
+                temperature: 0.9,
+                systemInstruction: "Jawablah dalam bahasa Indonesia."
+            }
         });
-
-        res.json({
-            reply: response.text()
-        });
-
+        res.status(200).json({ reply: response.text });
     } catch (e) {
-        console.log(e);
-        res.status(500).json({ error: e.message });
+        res.status(500).json({ message: e.message });
     }
-}); 
+})
 // ends here untuk chat endpoint
 
 // opsi lainnya untuk app.post di sesi minggu kemarin

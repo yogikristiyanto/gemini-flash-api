@@ -12,16 +12,18 @@ form.addEventListener('submit', async function (e) {
   input.value = '';
 
   try {
-    const response = await fetch('/generate-text', {
+    const response = await fetch('/api/chat', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
-      body: JSON.stringify({ prompt: userMessage })
+      body: JSON.stringify({ conversation: [
+        { role: "user", text: userMessage }
+      ]})
     });
 
     const data = await response.json();
-    appendMessage('bot', data.result);
+    appendMessage('bot', data.reply);
 
   } catch (error) {
     appendMessage('bot', 'Error connecting to server');
