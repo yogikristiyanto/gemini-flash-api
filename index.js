@@ -12,7 +12,35 @@ const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 const GEMINI_MODEL = 'gemini-2.5-flash';
 
 app.use(express.json());
+app.use(express.static('public'));
 
+// sinkronisasi dengan endpoint di file public/script.js
+app.post('/api/chat', async (req, res) => {
+
+    const { message } = req.body;
+
+    if (!message) {
+        return res.status(400).json({ error: "Message kosong" });
+    }
+
+    try {
+        const response = await ai.models.generateContent({
+            model: GEMINI_MODEL,
+            contents: message
+        });
+
+        res.json({
+            reply: response.text()
+        });
+
+    } catch (e) {
+        console.log(e);
+        res.status(500).json({ error: e.message });
+    }
+}); 
+// ends here untuk chat endpoint
+
+// opsi lainnya untuk app.post di sesi minggu kemarin
 app.post('/generate-text', async (req, res) => {
     const { prompt } = req.body;
     try {
@@ -85,7 +113,6 @@ app.post("/generate-audio", upload.single("audio"), async (req, res) => {
     }   
 });
 
-
-
+// Memulai server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log(`Server ready on http://localhost:${PORT}`));
